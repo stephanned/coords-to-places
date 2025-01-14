@@ -1,6 +1,6 @@
 {
 	"name": "coords-to-places",
-	"version": "1.0.3",
+	"version": "1.0.4",
 	"exports": {
 		".": {
 			"import": "./index.mjs",

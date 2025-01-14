@@ -1,11 +1,8 @@
 # coords-to-places
 
-Convert latitude/longitude to:
-* Country
-* Country subdivision (state, region, county)
-* Town (distance from defined centre point of selected towns)
+Convert latitude/longitude to *Country*, *Subdivision* (state, region, country) and *Town* information.
 
-## Data sources
+## What it does
 The module contains a script that converts data from naturalearthdata.com to a set of JSON files. These JSON files contain polygons to define borders of countries and subdivisions, as well as centre points for a selection of larger towns.
 
 Unlike some other modules, this module takes into consideration inaccuracies around coast lines, meaning that for coordinates by the coast you will still get a country and regional result even if the point is marginally outside the (simplified) polygons provided. It does this by looking for the nearest matching country/region if no polygon is found that contains the actual location.
@@ -14,13 +11,12 @@ The data is loaded as needed and then kept in memory. Country divisions (states,
 
 ## Using the module
 
-### getLocality
+The following functions can be imported from the module:
+
+### getLocality(latitude, longitude)
 
 ```javascript
-getLocality(43.0127464909186, -81.24605238996821);
-```
-
-```javascript
+> getLocality(43.0127464909186, -81.24605238996821);
 {
   country: { iso: 'CA', name: 'Canada' },
   description: 'London, Ontario, Canada',
@@ -35,65 +31,80 @@ getLocality(43.0127464909186, -81.24605238996821);
 ```
 An optional third parameter `{sub = true, town = true}` can be specified to limit results to not return all levels
 
-### getCountry
-
-```javascript
-getCountry(43.0127464909186, -81.24605238996821)
 ```
-
-```javascript
-{ iso: 'CA', name: 'Canada' }
-```
-
-### getSubdivision
-
-```javascript
-getSubdivision(43.0127464909186, -81.24605238996821)
-```
-
-```javascript
+> getLocality(43.0127464909186, -81.24605238996821, { sub: false });
 {
-    type: 'Province',
-    name: 'Ontario',
-    region: 'Eastern Canada',
-    iso_3166_2: 'CA-ON'
+  country: { iso: 'CA', name: 'Canada' },
+  description: 'London, Canada',
+  town: { name: 'London', distance: 845 }
 }
 ```
 
-### getClosestTown
+### getCountry(latitude, longitude)
 
 ```javascript
-getClosestTown(43.0127464909186, -81.24605238996821)
+> c.getCountry(43.0127464909186, -81.24605238996821);
+{ iso: 'CA', name: 'Canada' }
 ```
 
+### getSubdivision(latitude, longitude, isoCountryCode)
+
 ```javascript
+> getSubdivision(43.0127464909186, -81.24605238996821, 'CA');
+{
+  type: 'Province',
+  name: 'Ontario',
+  region: 'Eastern Canada',
+  iso_3166_2: 'CA-ON'
+}
+```
+
+### getClosestTown(latitude, longitude, isoCountryCode)
+
+Returns name of closest town and distance in metres
+
+```javascript
+> getClosestTown(43.0127464909186, -81.24605238996821, 'CA')
 { name: 'London', distance: 845 }
 ```
 
-### preload({ country: true, sub: true, town: true })
-
-Preloads data files for each level. You can opt to only load for some levels by specifying option parameters.
-
-### getCountries
+### getCountries()
 
 Returns a list of countries
 
-### getSubdivisions(countryCode)
+```
+> getCountries()
+{
+  ID: 'Indonesia',
+  MY: 'Malaysia',
+  CL: 'Chile',
+  BO: 'Bolivia',
+  PE: 'Peru',
+  ...
+}
+```
+
+### getSubdivisions(isoCountryCode)
 
 Returns supported subdivisions for the selected country (as strings)
 
-### getTowns(countryCode)
+```
+> getSubdivisions('AX')
+[
+  'Lumparland', 'Eckerö',
+  'Vårdö',      'Kumlinge',
+  'Jomala',     'Mariehamn',
+  'Kökar',      'Föglö',
+  'Sottunga',   'Lemland',
+  'Brändö'
+]
+```
+
+### getTowns(isoCountryCode)
 
 Returns an array of strings representing supported towns for the selected country
 
-# Refreshing data
-
-Go to https://www.naturalearthdata.com/downloads/10m-cultural-vectors/
-
-Download: Admin 0 - Countries => unzip into data/countries
-
-Download: Admin 1 - States, Provinces => unzip into data/provinces
-
-Download: Populated Places => unzip into data/populated
-
-npx coords-populate
+```
+> getTowns('LU')
+[ 'Diekirch', 'Grevenmacher', 'Luxembourg' ]
+```
