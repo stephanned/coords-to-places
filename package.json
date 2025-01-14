@@ -1,0 +1,17 @@
+{
+	"name": "coords-to-places",
+	"version": "1.0.2",
+	"exports": {
+		".": {
+			"import": "./index.mjs",
+			"require": "./index.cjs"
+		}
+	},
+	"dependencies": {
+		"shapefile": "^0.6.6"
+	},
+	"license": "MIT",
+	"bin": {
+		"coords-populate": "./populate.mjs"
+	}
+}
