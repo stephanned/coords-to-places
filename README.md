@@ -50,7 +50,7 @@ An optional third parameter `{sub = true, town = true}` can be specified to limi
 ### getSubdivision(latitude, longitude, isoCountryCode)
 
 ```javascript
-> getSubdivision(43.0127464909186, -81.24605238996821, 'CA');
+> getSubdivision(43.0127464909186, -81.24605238996821);
 {
   type: 'Province',
   name: 'Ontario',
@@ -58,6 +58,8 @@ An optional third parameter `{sub = true, town = true}` can be specified to limi
   iso_3166_2: 'CA-ON'
 }
 ```
+
+Specifying the country code will avoid a country lookup which is otherwise performed prior to retrieving and comparing with relevant state/region polygons.
 
 ### getClosestTown(latitude, longitude, isoCountryCode)
 
@@ -67,6 +69,8 @@ Returns name of closest town and distance in metres
 > getClosestTown(43.0127464909186, -81.24605238996821, 'CA')
 { name: 'London', distance: 845 }
 ```
+
+The country code is optional. Specifying the country code will avoid a country lookup which is otherwise performed prior to retrieving and comparing with relevant town coordinates.
 
 ### getCountries()
 

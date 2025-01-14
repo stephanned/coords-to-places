@@ -59,7 +59,17 @@ function closest(data, { latitude, longitude }, limit = null) {
     return { ...data[curr], key: curr, distance };
 }
 
-function getSubdivision(latitude, longitude, countryIsoCode) {
+function getCountry(latitude, longitude) {
+    loadCountries();
+    const res = closest(sources.countries, { latitude, longitude });
+    return { iso: res.key, name: res.name };
+}
+
+function getSubdivision(latitude, longitude, countryIsoCode = null) {
+    if (!countryIsoCode) {
+        const country = getCountry(latitude, longitude);
+        countryIsoCode = country.iso;
+    }
     loadProvinces(countryIsoCode);
     const res = closest(sources.provinces[countryIsoCode], { latitude, longitude });
     return {
@@ -70,17 +80,15 @@ function getSubdivision(latitude, longitude, countryIsoCode) {
     }
 }
 
-function getClosestTown(latitude, longitude, countryIsoCode, limitInMetres = 50_000) {
+function getClosestTown(latitude, longitude, countryIsoCode = null, limitInMetres = 50_000) {
+    if (!countryIsoCode) {
+        const country = getCountry(latitude, longitude);
+        countryIsoCode = country.iso;
+    }
     loadTowns();
     const res = closest(sources.towns[countryIsoCode], { latitude, longitude }, limitInMetres);
     if (!res) return null;
     return { name: res.name, distance: res.distance };
-}
-
-function getCountry(latitude, longitude) {
-    loadCountries();
-    const res = closest(sources.countries, { latitude, longitude });
-    return { iso: res.key, name: res.name };
 }
 
 function getLocality(latitude, longitude, { sub = true, town = true } = {}) {
