@@ -1,8 +1,7 @@
-import countries from './data/countries.json' with { type: 'json' };
-import provinces from './data/provinces.json' with { type: 'json' };
-import towns from './data/towns.json' with { type: 'json' };
-
+import { readFileSync } from 'fs';
 import { distanceBetweenPoints, distanceToPolygon, isPointInPolygon, getDistanceFromLatLonInMetres } from './util.mjs';
+
+const sources = {};
 
 function closest(data, { latitude, longitude }, limit = null) {
     let minDistance = { distance: Infinity };
@@ -44,8 +43,9 @@ function closest(data, { latitude, longitude }, limit = null) {
     return { ...data[curr], key: curr, distance };
 }
 
-export function getSubdivision(latitude, longitude, countryIsoCode) {
-    const res = closest(provinces[countryIsoCode], { latitude, longitude });
+function getSubdivision(latitude, longitude, countryIsoCode) {
+    if (!sources.provinces) preload({ country: false, sub: true, towns: false });
+    const res = closest(sources.provinces[countryIsoCode], { latitude, longitude });
     return {
         type: res.type,
         name: res.name,
@@ -54,18 +54,20 @@ export function getSubdivision(latitude, longitude, countryIsoCode) {
     }
 }
 
-export function getClosestTown(latitude, longitude, countryIsoCode, limitInMetres = 50_000) {
-    const res = closest(towns[countryIsoCode], { latitude, longitude }, limitInMetres);
+function getClosestTown(latitude, longitude, countryIsoCode, limitInMetres = 50_000) {
+    if (!sources.towns) preload({ country: false, sub: false, towns: true });
+    const res = closest(sources.towns[countryIsoCode], { latitude, longitude }, limitInMetres);
     if (!res) return null;
     return { name: res.name, distance: res.distance };
 }
 
-export function getCountry(latitude, longitude) {
-    const res = closest(countries, { latitude, longitude });
+function getCountry(latitude, longitude) {
+    if (!sources.countries) preload({ country: true, sub: false, towns: false });
+    const res = closest(sources.countries, { latitude, longitude });
     return { iso: res.key, name: res.name };
 }
 
-export function getLocality(latitude, longitude, { sub = true, town = true } = {}) {
+function getLocality(latitude, longitude, { sub = true, town = true } = {}) {
     const country = getCountry(latitude, longitude);
     const out = {
         country,
@@ -89,16 +91,31 @@ export function getLocality(latitude, longitude, { sub = true, town = true } = {
     return out;
 }
 
-export function getCountries() {
-    return Object.keys(countries).reduce((keep, x) => { keep[x] = countries[x].name; return keep; }, {});
+function getCountries() {
+    if (!sources.countries) preload({ country: true, sub: false, towns: false });
+    return Object.keys(sources.countries).reduce((keep, x) => { keep[x] = sources.countries[x].name; return keep; }, {});
 }
 
-export function getSubdivisions(countryCode) {
-    if (!provinces[countryCode]) return null;
-    return Object.keys(provinces[countryCode]).map(k => provinces[countryCode][k].name);
+function getSubdivisions(countryCode) {
+    if (!sources.provinces) preload({ country: false, sub: true, towns: false });
+    if (!sources.provinces[countryCode]) return null;
+    return Object.keys(sources.provinces[countryCode]).map(k => sources.provinces[countryCode][k].name);
 }
 
-export function getTowns(countryCode) {
-    if (!towns[countryCode]) return null;
-    return Object.keys(towns[countryCode]).map(k => towns[countryCode][k].name);
+function getTowns(countryCode) {
+    if (!sources.towns) preload({ country: false, sub: false, towns: true });
+    if (!sources.towns[countryCode]) return null;
+    return Object.keys(sources.towns[countryCode]).map(k => sources.towns[countryCode][k].name);
 }
+
+function preload({ country = true, sub = true, town = true } = {}) {
+    sources.countries = JSON.parse(readFileSync(import.meta.dirname + '/data/countries.json'));
+    sources.provinces = JSON.parse(readFileSync(import.meta.dirname + '/data/provinces.json'));
+    sources.towns = JSON.parse(readFileSync(import.meta.dirname + '/data/towns.json'));
+}
+
+export { 
+    preload,
+    getClosestTown, getSubdivision, getCountry, getLocality,
+    getTowns, getSubdivisions, getCountries,
+};

@@ -1,4 +1,4 @@
-export function isPointInPolygon(point, vs) {
+function isPointInPolygon(point, vs) {
     let x = point[0], y = point[1];
     let inside = false;
     for (let i = 0, j = vs.length - 1; i < vs.length; j = i++) {
@@ -16,12 +16,12 @@ export function isPointInPolygon(point, vs) {
 // Since it has not been updated for 8 years I'm internalising this
 // and adjusting to our use instead of adding as a dependency
 
-export function distanceBetweenPoints([p1x, p1y], [p2x, p2y]) {
+function distanceBetweenPoints([p1x, p1y], [p2x, p2y]) {
     const distance = Math.sqrt(Math.pow(p1x - p2x, 2) + Math.pow(p1y - p2y, 2));
     return { distance, point: [p2x, p2y] };
 }
 
-export function distanceToLine([px, py], [[l1x, l1y], [l2x, l2y]]) {
+function distanceToLine([px, py], [[l1x, l1y], [l2x, l2y]]) {
     const xD = l2x - l1x;
     const yD = l2y - l1y;
 
@@ -39,7 +39,7 @@ export function distanceToLine([px, py], [[l1x, l1y], [l2x, l2y]]) {
     return distanceBetweenPoints([px, py], closestLine);
 }
 
-export function distanceToPolygon ([px, py], vertices) {
+function distanceToPolygon ([px, py], vertices) {
     const comp = vertices.reduce(({ prevPoint, dist }, currPoint) => {
     const currDist = distanceToLine([px, py], [prevPoint, currPoint]);
     const ret = {
@@ -58,7 +58,7 @@ export function distanceToPolygon ([px, py], vertices) {
 
 // Adapted from https://stackoverflow.com/questions/18883601/function-to-calculate-distance-between-two-coordinates
 
-export function getDistanceFromLatLonInMetres([lat1, lon1], [lat2, lon2]) {
+function getDistanceFromLatLonInMetres([lat1, lon1], [lat2, lon2]) {
     const R = 6_371_000; // Radius of the earth in metres
     const deg2rad = deg => deg * Math.PI / 180;
     const dLat = deg2rad(lat2-lat1); 
@@ -72,3 +72,11 @@ export function getDistanceFromLatLonInMetres([lat1, lon1], [lat2, lon2]) {
 }
 
 // END
+
+export { 
+    isPointInPolygon, 
+    distanceBetweenPoints, 
+    distanceToLine, 
+    distanceToPolygon, 
+    getDistanceFromLatLonInMetres,
+};

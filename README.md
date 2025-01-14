@@ -10,6 +10,8 @@ The module contains a script that converts data from naturalearthdata.com to a s
 
 Unlike some other modules, this module takes into consideration inaccuracies around coast lines, meaning that for coordinates by the coast you will still get a country and regional result even if the point is marginally outside the (simplified) polygons provided. It does this by looking for the nearest matching country/region if no polygon is found that contains the actual location.
 
+The data is loaded when needed, or can optionally be preloaded with the built-in preload function.
+
 ## Using the module
 
 ### getLocality
@@ -68,17 +70,21 @@ getClosestTown(69.40840239095691, 30.215650809440344)
 { name: 'London', distance: 845 }
 ```
 
+### preload({ country: true, sub: true, town: true })
+
+Preloads data files for each level. You can opt to only load for some levels by specifying option parameters.
+
 ### getCountries
 
 Returns a list of countries
 
 ### getSubdivisions(countryCode)
 
-Returns supported subdivisions for the selected country
+Returns supported subdivisions for the selected country (as strings)
 
 ### getTowns(countryCode)
 
-Returns supported towns for the selected country
+Returns an array of strings representing supported towns for the selected country
 
 # Refreshing data
 

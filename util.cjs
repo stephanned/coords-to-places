@@ -73,4 +73,10 @@ function getDistanceFromLatLonInMetres([lat1, lon1], [lat2, lon2]) {
 
 // END
 
-module.exports = { isPointInPolygon, distanceBetweenPoints, distanceToLine, distanceToPolygon, getDistanceFromLatLonInMetres }
+module.exports = { 
+    isPointInPolygon, 
+    distanceBetweenPoints, 
+    distanceToLine, 
+    distanceToPolygon, 
+    getDistanceFromLatLonInMetres,
+};
