@@ -1,7 +1,23 @@
 import { readFileSync } from 'fs';
 import { distanceBetweenPoints, distanceToPolygon, isPointInPolygon, getDistanceFromLatLonInMetres } from './util.mjs';
 
-const sources = {};
+const sources = { countries: null, provinces: {}, towns: null };
+
+function loadJSON(filename) {
+    return JSON.parse(readFileSync(import.meta.dirname + '/data/' + filename));
+}
+function loadProvinces(countryIsoCode) {
+    if (sources.provinces[countryIsoCode]) return;
+    sources.provinces[countryIsoCode] = loadJSON('provinces-' + countryIsoCode + '.json');
+}
+function loadCountries() {
+    if (sources.countries) return;
+    sources.countries = loadJSON('countries.json');
+}
+function loadTowns() {
+    if (sources.towns) return;
+    sources.towns = loadJSON('towns.json');
+}
 
 function closest(data, { latitude, longitude }, limit = null) {
     let minDistance = { distance: Infinity };
@@ -44,7 +60,7 @@ function closest(data, { latitude, longitude }, limit = null) {
 }
 
 function getSubdivision(latitude, longitude, countryIsoCode) {
-    if (!sources.provinces) preload({ country: false, sub: true, towns: false });
+    loadProvinces(countryIsoCode);
     const res = closest(sources.provinces[countryIsoCode], { latitude, longitude });
     return {
         type: res.type,
@@ -55,14 +71,14 @@ function getSubdivision(latitude, longitude, countryIsoCode) {
 }
 
 function getClosestTown(latitude, longitude, countryIsoCode, limitInMetres = 50_000) {
-    if (!sources.towns) preload({ country: false, sub: false, towns: true });
+    loadTowns();
     const res = closest(sources.towns[countryIsoCode], { latitude, longitude }, limitInMetres);
     if (!res) return null;
     return { name: res.name, distance: res.distance };
 }
 
 function getCountry(latitude, longitude) {
-    if (!sources.countries) preload({ country: true, sub: false, towns: false });
+    loadCountries();
     const res = closest(sources.countries, { latitude, longitude });
     return { iso: res.key, name: res.name };
 }
@@ -92,30 +108,23 @@ function getLocality(latitude, longitude, { sub = true, town = true } = {}) {
 }
 
 function getCountries() {
-    if (!sources.countries) preload({ country: true, sub: false, towns: false });
+    loadCountries();
     return Object.keys(sources.countries).reduce((keep, x) => { keep[x] = sources.countries[x].name; return keep; }, {});
 }
 
 function getSubdivisions(countryCode) {
-    if (!sources.provinces) preload({ country: false, sub: true, towns: false });
-    if (!sources.provinces[countryCode]) return null;
+    loadProvinces(countryCode);
+    if (!sources.provinces[countryCode]) return [];
     return Object.keys(sources.provinces[countryCode]).map(k => sources.provinces[countryCode][k].name);
 }
 
 function getTowns(countryCode) {
-    if (!sources.towns) preload({ country: false, sub: false, towns: true });
-    if (!sources.towns[countryCode]) return null;
+    loadTowns();
+    if (!sources.towns[countryCode]) return [];
     return Object.keys(sources.towns[countryCode]).map(k => sources.towns[countryCode][k].name);
 }
 
-function preload({ country = true, sub = true, town = true } = {}) {
-    sources.countries = JSON.parse(readFileSync(import.meta.dirname + '/data/countries.json'));
-    sources.provinces = JSON.parse(readFileSync(import.meta.dirname + '/data/provinces.json'));
-    sources.towns = JSON.parse(readFileSync(import.meta.dirname + '/data/towns.json'));
-}
-
 export { 
-    preload,
     getClosestTown, getSubdivision, getCountry, getLocality,
     getTowns, getSubdivisions, getCountries,
 };

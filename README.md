@@ -10,14 +10,14 @@ The module contains a script that converts data from naturalearthdata.com to a s
 
 Unlike some other modules, this module takes into consideration inaccuracies around coast lines, meaning that for coordinates by the coast you will still get a country and regional result even if the point is marginally outside the (simplified) polygons provided. It does this by looking for the nearest matching country/region if no polygon is found that contains the actual location.
 
-The data is loaded when needed, or can optionally be preloaded with the built-in preload function.
+The data is loaded as needed and then kept in memory. Country divisions (states, regions, etc.) are separated into per-country files to reduce memory overhead.
 
 ## Using the module
 
 ### getLocality
 
 ```javascript
-getLocality(69.40840239095691, 30.215650809440344);
+getLocality(43.0127464909186, -81.24605238996821);
 ```
 
 ```javascript
@@ -38,7 +38,7 @@ An optional third parameter `{sub = true, town = true}` can be specified to limi
 ### getCountry
 
 ```javascript
-getCountry(69.40840239095691, 30.215650809440344)
+getCountry(43.0127464909186, -81.24605238996821)
 ```
 
 ```javascript
@@ -48,7 +48,7 @@ getCountry(69.40840239095691, 30.215650809440344)
 ### getSubdivision
 
 ```javascript
-getSubdivision(69.40840239095691, 30.215650809440344)
+getSubdivision(43.0127464909186, -81.24605238996821)
 ```
 
 ```javascript
@@ -63,7 +63,7 @@ getSubdivision(69.40840239095691, 30.215650809440344)
 ### getClosestTown
 
 ```javascript
-getClosestTown(69.40840239095691, 30.215650809440344)
+getClosestTown(43.0127464909186, -81.24605238996821)
 ```
 
 ```javascript

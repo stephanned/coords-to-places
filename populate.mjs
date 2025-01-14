@@ -69,7 +69,9 @@ async function populateProvinces() {
         };
     }
 
-    fs.writeFileSync(import.meta.dirname + '/data/provinces.json', JSON.stringify(provinces));
+    for (const iso in provinces) {
+        fs.writeFileSync(import.meta.dirname + '/data/provinces-' + iso + '.json', JSON.stringify(provinces[iso]));
+    }
 }
 
 async function populateTowns() {
