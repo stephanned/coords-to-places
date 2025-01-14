@@ -43,7 +43,7 @@ An optional third parameter `{sub = true, town = true}` can be specified to limi
 ### getCountry(latitude, longitude)
 
 ```javascript
-> c.getCountry(43.0127464909186, -81.24605238996821);
+> getCountry(43.0127464909186, -81.24605238996821);
 { iso: 'CA', name: 'Canada' }
 ```
 
