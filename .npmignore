@@ -2,3 +2,5 @@ data/countries
 data/provinces
 data/populated
 /node_modules
+test.mjs
+test.cjs

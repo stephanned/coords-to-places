@@ -21,8 +21,9 @@ async function populateCountries() {
     while (result = await source.read()) {
         if (!result.value) break;
         const f = JSON.parse(JSON.stringify(result.value)?.replace(/\\x00/g,'')?.replace(/\\u0000/g,''));
-        if (countries[f.properties.ISO_A2_EH]) {
-            const c = countries[f.properties.ISO_A2_EH];
+        console.log(f.properties.ADM0_A3, f.properties.NAME_LONG); // Unique
+        if (countries[f.properties.ADM0_A3]) {
+            const c = countries[f.properties.ADM0_A3];
             if (f.properties.TYPE === 'Country') { // Use name of country, not dependencies
                 c.name = f.properties.NAME_EN;
             }
@@ -34,7 +35,8 @@ async function populateCountries() {
                 f.geometry.type = 'MultiPolygon';
                 f.geometry.coordinates = [ f.geometry.coordinates ];
             }
-            countries[f.properties.ISO_A2_EH] = {
+            countries[f.properties.ADM0_A3] = {
+                iso: f.properties.ISO_A2_EH,
                 name: f.properties.NAME_EN,
                 geometry: f.geometry,
             }
@@ -57,10 +59,10 @@ async function populateProvinces() {
         if (!result.value) break;
         const f = JSON.parse(JSON.stringify(result.value)?.replace(/\\x00/g,'')?.replace(/\\u0000/g,''));
         
-        if (!provinces[f.properties.iso_a2]) {
-            provinces[f.properties.iso_a2] = {};
+        if (!provinces[f.properties.adm0_a3]) {
+            provinces[f.properties.adm0_a3] = {};
         }
-        provinces[f.properties.iso_a2][f.properties.iso_3166_2] = {
+        provinces[f.properties.adm0_a3][f.properties.iso_3166_2] = {
             name: f.properties.name_en,
             country: f.properties.iso_a2,
             region: f.properties.region,
@@ -69,8 +71,8 @@ async function populateProvinces() {
         };
     }
 
-    for (const iso in provinces) {
-        fs.writeFileSync(import.meta.dirname + '/data/provinces-' + iso + '.json', JSON.stringify(provinces[iso]));
+    for (const adm0_a3 in provinces) {
+        fs.writeFileSync(import.meta.dirname + '/data/provinces-' + adm0_a3 + '.json', JSON.stringify(provinces[adm0_a3]));
     }
 }
 
@@ -87,10 +89,10 @@ async function populateTowns() {
     while (result = await source.read()) {
         if (!result.value) break;
         const f = JSON.parse(JSON.stringify(result.value)?.replace(/\\x00/g,'')?.replace(/\\u0000/g,''));
-        if (!towns[f.properties.ISO_A2]) {
-            towns[f.properties.ISO_A2] = {};
+        if (!towns[f.properties.ADM0_A3]) {
+            towns[f.properties.ADM0_A3] = {};
         }
-        towns[f.properties.ISO_A2][f.properties.NAME_EN] = {
+        towns[f.properties.ADM0_A3][f.properties.NAME_EN] = {
             name: f.properties.NAME_EN,
             geometry: f.geometry,
         }
