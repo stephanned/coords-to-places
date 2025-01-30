@@ -62,26 +62,59 @@ function closest(data, { latitude, longitude }, limit = null) {
 
 function getCountries() {
     loadCountries();
-    return Object.keys(sources.countries).reduce((keep, x) => { keep[x] = sources.countries[x].name; return keep; }, {});
+    return Object.keys(sources.countries).reduce((keep, x) => { 
+        const res = sources.countries[x]; 
+        keep.push({ code: x, iso: res.iso, name: res.name }); 
+        return keep; 
+    }, []);
+}
+
+function convertCountryCode(countryCode) {
+    if (countryCode?.length !== 2) return countryCode;
+    loadCountries();
+    for (const key in sources.countries) {
+        if (sources.countries[key].iso === countryCode) {
+            return key;
+        }
+    }
+    return countryCode;
 }
 
 function getRegions(countryCode) {
-    loadProvinces(countryCode);
+    countryCode = convertCountryCode(countryCode);
+    try {
+        loadProvinces(countryCode);
+    } catch {
+        throw new Error(`Invalid country code: "${countryCode}"`);
+    }
     if (!sources.provinces[countryCode]) return [];
-    return Object.keys(sources.provinces[countryCode]).map(k => sources.provinces[countryCode][k].name);
+    return Object.keys(sources.provinces[countryCode]).map(k => {
+        const res = sources.provinces[countryCode][k];
+        return {
+            code: k,
+            type: res.type,
+            name: res.name,
+            area: res.region,
+        }
+    });
 }
 
 function getCities(countryCode, withLocation = false) {
+    countryCode = convertCountryCode(countryCode);
     loadTowns();
     if (!sources.towns[countryCode]) return [];
-    if (withLocation) {
-        return Object.keys(sources.towns[countryCode]).map(k => ({
-            name: sources.towns[countryCode][k].name,
-            lon: sources.towns[countryCode][k].geometry.coordinates[0],
-            lat: sources.towns[countryCode][k].geometry.coordinates[1],
-        }));
-    }
-    return Object.keys(sources.towns[countryCode]).map(k => sources.towns[countryCode][k].name);
+    return Object.keys(sources.towns[countryCode]).map(k => {
+        const res = sources.towns[countryCode][k];
+        return { 
+            name: res.name,
+            distance: res.distance,
+            latitude: res.geometry.coordinates[1],
+            longitude: res.geometry.coordinates[0],
+        };
+        // name: sources.towns[countryCode][k].name,
+        // lon: sources.towns[countryCode][k].geometry.coordinates[0],
+        // lat: sources.towns[countryCode][k].geometry.coordinates[1],
+    });
 }
 
 function getLocation(latitude, longitude) {
@@ -127,7 +160,12 @@ function getLocation(latitude, longitude) {
                 loadTowns(country.code);
                 const res = closest(sources.towns[country.code], { latitude, longitude }, 50_000);
                 if (!res) { _city = null; return null; }
-                _city = { name: res.name, distance: res.distance };
+                _city = { 
+                    name: res.name,
+                    distance: res.distance,
+                    latitude: res.geometry.coordinates[1],
+                    longitude: res.geometry.coordinates[0],
+                };
                 return _city;
             }
         },
@@ -154,36 +192,8 @@ function getLocation(latitude, longitude) {
     return loc;
 }
 
-// Compatibility interfaces
-function getLocality(latitude, longitude) {
-    const loc = getLocation(latitude, longitude);
-    return {
-        country: { iso: loc.country.iso, name: loc.country.name },
-        sub: { type: loc.region.type, name: loc.region.name, region: loc.region.area, iso_3166_2: loc.region.code },
-        town: { name: loc.city.name, distance: loc.city.distance },
-    };
-}
-function getCountry(latitude, longitude) {
-    const loc = getLocation(latitude, longitude);
-    return { iso: loc.country.iso, name: loc.country.name };
-}
-function getSubdivision(latitude, longitude) {
-    const loc = getLocation(latitude, longitude);
-    return { type: loc.region.type, name: loc.region.name, region: loc.region.area, iso_3166_2: loc.region.code };
-}
-function getClosestTown(latitude, longitude) {
-    const loc = getLocation(latitude, longitude);
-    return { name: loc.city.name, distance: loc.city.distance };
-}
-
-const getTowns = getCities;
-const getSubdivisions = getRegions;
-
 module.exports = { 
     getLocation,
     getCities, getRegions, getCountries,
     getDistanceFromLatLonInMetres,
-    // Compat
-    getClosestTown, getSubdivision, getCountry, getLocality,
-    getTowns, getSubdivisions,
 };
